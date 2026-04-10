@@ -299,42 +299,81 @@ function Results({ result }: { result: AnalysisResult }) {
         </div>
       )}
 
-      {/* Warning Issues Table */}
-      {warnings.length > 0 && (
-        <div>
-          <h3 className="text-sm font-bold text-yellow-700 mb-2 flex items-center gap-2">
-            ⚠️ Warnings — Time Gaps
-          </h3>
-          <div className="rounded-xl border border-yellow-200 overflow-hidden">
-            <table className="w-full text-sm">
-              <thead className="bg-yellow-50">
-                <tr>
-                  <th className="text-left px-4 py-2 text-xs font-semibold text-yellow-700">Date</th>
-                  <th className="text-left px-4 py-2 text-xs font-semibold text-yellow-700">Type</th>
-                  <th className="text-left px-4 py-2 text-xs font-semibold text-yellow-700">Workday</th>
-                  <th className="text-left px-4 py-2 text-xs font-semibold text-yellow-700">Assembled Active</th>
-                  <th className="text-right px-4 py-2 text-xs font-semibold text-yellow-700">Gap</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-yellow-100">
-                {warnings.map((d, i) => (
-                  <tr key={i} className="bg-white">
-                    <td className="px-4 py-2 font-medium text-gray-800">{d.dayLabel}</td>
-                    <td className="px-4 py-2">
-                      <DiscrepancyBadge type={d.type} severity={d.severity} />
-                    </td>
-                    <td className="px-4 py-2 text-gray-600">{d.workdayTime}</td>
-                    <td className="px-4 py-2 text-gray-600">{d.assembledTime}</td>
-                    <td className="px-4 py-2 text-right font-bold text-yellow-600">
-                      {d.gapMinutes > 0 ? `${d.gapMinutes} min` : '—'}
-                    </td>
+      {/* Clock-In / Meal Return Gaps */}
+      {(() => {
+        const gaps = warnings.filter((d) =>
+          d.type === 'clock_in_gap' || d.type === 'clock_out_gap' || d.type === 'meal_return_gap' || d.type === 'no_assembled_data'
+        )
+        if (!gaps.length) return null
+        return (
+          <div>
+            <h3 className="text-sm font-bold text-yellow-700 mb-2">⚠️ Warnings — Clock-In / Meal Return Gaps</h3>
+            <div className="rounded-xl border border-yellow-200 overflow-hidden">
+              <table className="w-full text-sm">
+                <thead className="bg-yellow-50">
+                  <tr>
+                    <th className="text-left px-4 py-2 text-xs font-semibold text-yellow-700">Date</th>
+                    <th className="text-left px-4 py-2 text-xs font-semibold text-yellow-700">Type</th>
+                    <th className="text-left px-4 py-2 text-xs font-semibold text-yellow-700">Workday</th>
+                    <th className="text-left px-4 py-2 text-xs font-semibold text-yellow-700">Assembled Active</th>
+                    <th className="text-right px-4 py-2 text-xs font-semibold text-yellow-700">Gap</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-yellow-100">
+                  {gaps.map((d, i) => (
+                    <tr key={i} className="bg-white">
+                      <td className="px-4 py-2 font-medium text-gray-800">{d.dayLabel}</td>
+                      <td className="px-4 py-2"><DiscrepancyBadge type={d.type} severity={d.severity} /></td>
+                      <td className="px-4 py-2 text-gray-600">{d.workdayTime}</td>
+                      <td className="px-4 py-2 text-gray-600">{d.assembledTime}</td>
+                      <td className="px-4 py-2 text-right font-bold text-yellow-600">
+                        {d.gapMinutes > 0 ? `${d.gapMinutes} min` : '—'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
-      )}
+        )
+      })()}
+
+      {/* State Violations */}
+      {(() => {
+        const violations = warnings.filter((d) =>
+          d.type === 'excessive_rampdown' || d.type === 'excessive_open_cases'
+        )
+        if (!violations.length) return null
+        return (
+          <div>
+            <h3 className="text-sm font-bold text-yellow-700 mb-2">⚠️ Warnings — State Violations</h3>
+            <div className="rounded-xl border border-yellow-200 overflow-hidden">
+              <table className="w-full text-sm">
+                <thead className="bg-yellow-50">
+                  <tr>
+                    <th className="text-left px-4 py-2 text-xs font-semibold text-yellow-700">Date</th>
+                    <th className="text-left px-4 py-2 text-xs font-semibold text-yellow-700">Type</th>
+                    <th className="text-left px-4 py-2 text-xs font-semibold text-yellow-700">Workday Shift</th>
+                    <th className="text-left px-4 py-2 text-xs font-semibold text-yellow-700">Assembled</th>
+                    <th className="text-right px-4 py-2 text-xs font-semibold text-yellow-700">Total</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-yellow-100">
+                  {violations.map((d, i) => (
+                    <tr key={i} className="bg-white">
+                      <td className="px-4 py-2 font-medium text-gray-800">{d.dayLabel}</td>
+                      <td className="px-4 py-2"><DiscrepancyBadge type={d.type} severity={d.severity} /></td>
+                      <td className="px-4 py-2 text-gray-600">{d.workdayTime}</td>
+                      <td className="px-4 py-2 text-gray-600">{d.assembledTime}</td>
+                      <td className="px-4 py-2 text-right font-bold text-yellow-600">{d.gapMinutes} min</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )
+      })()}
 
       {result.discrepancies.length === 0 && (
         <div className="rounded-xl border border-green-200 bg-green-50 p-6 text-center">
